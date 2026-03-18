@@ -1,6 +1,6 @@
 <?php
 
-$dsn = "mysql:host=localhost;dbname=pedrinho;charset=utf8";
+$dsn = "mysql:host=localhost;dbname=empres;charset=utf8";
 $usuario = "root";
 $senha = "";
 
