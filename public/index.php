@@ -1,3 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Direção de Eventos</title> <link rel="stylesheet" href="public/assets/css/style.css">
+</head>
+<body>
+    
+<h1>Bem Vindo a sua Direção de Eventos!</h1>
+<p>Gerencie seus eventos e participantes de forma simples e eficiente.</p>
+<nav>
+    <a href="?rota=listar_eventos">Eventos</a> |
+    <a href="?rota=listar_participantes">Participantes</a> |
+    <a href="?rota=nova_inscricao">Inscrições</a>
+</nav>
 <?php
 // =======================================================
 // 1. CONEXÃO COM O BANCO DE DADOS
@@ -115,12 +131,31 @@ switch ($rota) {
     // -----------------------------------------
     // ROTAS DE INSCRIÇÕES (Gerencia participantes dentro do evento)
     // -----------------------------------------
+ case 'nova_inscricao':
+        $inscricaoController->novaInscricao();
+        break;
+
+    case 'salvar_inscricao':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mensagem = $inscricaoController->inscrever($_POST['participante_id'], $_POST['evento_id']);
+            $evento_id = $_POST['evento_id'];
+            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
+        }
+        break;
+
     case 'participantes_evento':
         if (isset($_GET['id'])) {
             $inscricaoController->participantesDoEvento($_GET['id']);
         }
         break;
 
+    case 'deletar_inscricao':
+        if (isset($_GET['participante_id']) && isset($_GET['evento_id'])) {
+            $mensagem = $inscricaoController->deletar($_GET['participante_id'], $_GET['evento_id']);
+            $evento_id = $_GET['evento_id'];
+            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
+        }
+        break;
     // -----------------------------------------
     // ROTA PADRÃO (Erro 404 - Página não encontrada)
     // -----------------------------------------
@@ -131,3 +166,5 @@ switch ($rota) {
         break;
 }
 ?>
+</body>
+</html>

@@ -40,13 +40,21 @@ class Inscricao {
 
     public function listarParticipantesPorEvento($evento_id) {
         $stmt = $this->pdo->prepare("
-            SELECT p.nome, p.email, p.telefone 
+            SELECT p.id as participante_id, p.nome, p.email, p.telefone 
             FROM inscricoes i
             JOIN participantes p ON i.participante_id = p.id
             WHERE i.evento_id = ?
         ");
         $stmt->execute([$evento_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deletarInscricao($participante_id, $evento_id) {
+        $stmt = $this->pdo->prepare("DELETE FROM inscricoes WHERE participante_id = ? AND evento_id = ?");
+        if ($stmt->execute([$participante_id, $evento_id])) {
+            return "Inscrição cancelada com sucesso!";
+        }
+        return "Erro ao cancelar a inscrição.";
     }
 }
 ?>
