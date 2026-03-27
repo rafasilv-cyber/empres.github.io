@@ -12,8 +12,10 @@
 <nav>
     <a href="?rota=listar_eventos">Eventos</a> |
     <a href="?rota=listar_participantes">Participantes</a> |
-    <a href="?rota=nova_inscricao">Inscrições</a>
+    <a href="?rota=nova_inscricao">Inscrições</a> |
+    <a href="?rota=listar_palestrantes">Palestrantes</a>
 </nav>
+
 <?php
 // =======================================================
 // 1. CONEXÃO COM O BANCO DE DADOS
@@ -37,11 +39,13 @@ try {
 require_once(__DIR__ . '/../app/mvc/Controller/EventoController.php');
 require_once(__DIR__ . '/../app/mvc/Controller/ParticipanteController.php');
 require_once(__DIR__ . '/../app/mvc/Controller/InscricaoController.php');
+require_once(__DIR__ . '/../app/mvc/Controller/PalestranteController.php');
 
 // Instanciar os Controllers passando a conexão com o banco
 $eventoController = new EventoController($pdo);
 $participanteController = new ParticipanteController($pdo);
 $inscricaoController = new InscricaoController($pdo);
+$palestranteController = new PalestranteController($pdo);
 
 
 // =======================================================
@@ -90,7 +94,74 @@ switch ($rota) {
         }
         break;
 
+  // -----------------------------------------
+    // ROTAS DE INSCRIÇÕES (Gerencia participantes dentro do evento)
     // -----------------------------------------
+ case 'nova_inscricao':
+        $inscricaoController->novaInscricao();
+        break;
+
+    case 'salvar_inscricao':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mensagem = $inscricaoController->inscrever($_POST['participante_id'], $_POST['evento_id']);
+            $evento_id = $_POST['evento_id'];
+            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
+        }
+        break;
+
+    case 'participantes_evento':
+        if (isset($_GET['id'])) {
+            $inscricaoController->participantesDoEvento($_GET['id']);
+        }
+        break;
+
+    case 'deletar_inscricao':
+        if (isset($_GET['participante_id']) && isset($_GET['evento_id'])) {
+            $mensagem = $inscricaoController->deletar($_GET['participante_id'], $_GET['evento_id']);
+            $evento_id = $_GET['evento_id'];
+            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
+        }
+        break;
+
+    // -----------------------------------------
+    // ROTAS DE PALESTRANTES
+    // -----------------------------------------
+    case 'listar_palestrantes':
+        $palestranteController->listar();
+        break;
+        
+    case 'novo_palestrante':
+        require_once(__DIR__ . '/../app/mvc/View/palestrantes/cadastrar.php');
+        break;
+        
+    case 'salvar_palestrante':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mensagem = $palestranteController->cadastrar($_POST['nome'], $_POST['email'], $_POST['telefone'], $_POST['especialidade']);
+            echo "<script>alert('$mensagem'); window.location.href='?rota=listar_palestrantes';</script>";
+        }
+        break;
+        
+    case 'editar_palestrante':
+        if (isset($_GET['id'])) {
+            $palestranteController->buscarPalestrante($_GET['id']);
+        }
+        break;
+        
+    case 'atualizar_palestrante':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mensagem = $palestranteController->editar($_POST['id'], $_POST['nome'], $_POST['email'], $_POST['telefone'], $_POST['especialidade']);
+            echo "<script>alert('$mensagem'); window.location.href='?rota=listar_palestrantes';</script>";
+        }
+        break;
+        
+    case 'deletar_palestrante':
+        if (isset($_GET['id'])) {
+            $mensagem = $palestranteController->deletar($_GET['id']);
+            echo "<script>alert('$mensagem'); window.location.href='?rota=listar_palestrantes';</script>";
+        }
+        break;
+    
+        // -----------------------------------------
     // ROTAS DE PARTICIPANTES
     // -----------------------------------------
     case 'listar_participantes':
@@ -128,34 +199,7 @@ switch ($rota) {
         }
         break;
 
-    // -----------------------------------------
-    // ROTAS DE INSCRIÇÕES (Gerencia participantes dentro do evento)
-    // -----------------------------------------
- case 'nova_inscricao':
-        $inscricaoController->novaInscricao();
-        break;
-
-    case 'salvar_inscricao':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $mensagem = $inscricaoController->inscrever($_POST['participante_id'], $_POST['evento_id']);
-            $evento_id = $_POST['evento_id'];
-            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
-        }
-        break;
-
-    case 'participantes_evento':
-        if (isset($_GET['id'])) {
-            $inscricaoController->participantesDoEvento($_GET['id']);
-        }
-        break;
-
-    case 'deletar_inscricao':
-        if (isset($_GET['participante_id']) && isset($_GET['evento_id'])) {
-            $mensagem = $inscricaoController->deletar($_GET['participante_id'], $_GET['evento_id']);
-            $evento_id = $_GET['evento_id'];
-            echo "<script>alert('$mensagem'); window.location.href='?rota=participantes_evento&id=$evento_id';</script>";
-        }
-        break;
+  
     // -----------------------------------------
     // ROTA PADRÃO (Erro 404 - Página não encontrada)
     // -----------------------------------------
